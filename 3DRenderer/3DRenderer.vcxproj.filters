@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Interface">
+      <UniqueIdentifier>{a5094de9-3d96-43f1-b962-817b2fe077fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DX11Renderer">
+      <UniqueIdentifier>{da4fba02-5965-4f12-9581-d60eb43787a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Define">
+      <UniqueIdentifier>{3b84602e-6f6b-4fce-ae8a-d90324f1a46f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="IRenderer.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="DX11Renderer.h">
+      <Filter>DX11Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="DX11Define.h">
+      <Filter>Define</Filter>
+    </ClInclude>
+    <ClInclude Include="ConceptDefine.h">
+      <Filter>Define</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="DX11Renderer.cpp">
+      <Filter>DX11Renderer</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

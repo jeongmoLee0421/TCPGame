@@ -1,12 +1,18 @@
 ﻿#include <Windows.h>
+#include <cassert>
 
 #include "GameProcess.h"
+#include "../Inc/IRenderer.h"
 
 GameProcess::GameProcess()
 	: mHwnd{}
 	, mMsg{}
 	, mClientWidth{}
 	, mClientHeight{}
+	, mRenderer{ nullptr }
+	, mRendererModule{}
+	, GetRenderer{ nullptr }
+	, ReleaseRenderer{ nullptr }
 {
 }
 
@@ -21,11 +27,34 @@ HRESULT GameProcess::Initialize(HINSTANCE hInstance, int nCmdShow)
 		return E_FAIL;
 	}
 
+	// 명시적 링킹을 하면 내가 원하는 시점에 dll을 메모리에 올렸다 내렸다가 가능
+	// exe파일이 실행되어 있는 상태에서 dll 교체도 가능
+	mRendererModule = LoadLibrary(L"../Dll/3DRenderer.dll");
+	assert(mRendererModule);
+
+	// C style 이름으로 함수를 찾자
+	GetRenderer = reinterpret_cast<GETRENDERER>(GetProcAddress(mRendererModule, "GetRenderer"));
+	assert(GetRenderer);
+
+	ReleaseRenderer = reinterpret_cast<RELEASERENDERER>(GetProcAddress(mRendererModule, "ReleaseRenderer"));
+	assert(ReleaseRenderer);
+
+	mRenderer = GetRenderer();
+	mRenderer->Initialize(mHwnd, mClientWidth, mClientHeight);
+
 	return S_OK;
 }
 
 HRESULT GameProcess::Finalize()
 {
+	bool bSuccess = true;
+
+	mRenderer->Finalize();
+	ReleaseRenderer(mRenderer);
+
+	bSuccess = FreeLibrary(mRendererModule);
+	assert(bSuccess);
+
 	return S_OK;
 }
 
@@ -103,4 +132,11 @@ void GameProcess::Update()
 
 void GameProcess::Render()
 {
+	// dll을 사용하는 입장에서 IRenderer interface만 알고 있고
+	// 특정 함수를 호출하면 가상함수 테이블을 참조하여 dll에서 dx11로 구현된 함수가 호출됨
+	mRenderer->BeginRender();
+
+	mRenderer->Render();
+
+	mRenderer->EndRender();
 }
