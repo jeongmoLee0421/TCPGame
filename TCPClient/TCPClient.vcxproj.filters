@@ -4,10 +4,21 @@
     <Filter Include="EntryPoint">
       <UniqueIdentifier>{bfa30478-bc57-4012-ac82-8d679e069d89}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameProcess">
+      <UniqueIdentifier>{d1a51e4d-ba66-495d-8ab7-2cdf2996fb45}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinMain.cpp">
       <Filter>EntryPoint</Filter>
     </ClCompile>
+    <ClCompile Include="GameProcess.cpp">
+      <Filter>GameProcess</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GameProcess.h">
+      <Filter>GameProcess</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

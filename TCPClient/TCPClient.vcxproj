@@ -113,6 +113,9 @@
     <PostBuildEvent>
       <Command>copy /y "$(OutDir)TCPClient.exe" "$(SolutionDir)EXE\TCPClient.exe"</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>copy "$(ProjectDir)GameProcess.h" "$(SolutionDir)Inc\GameProcess.h"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -131,7 +134,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="GameProcess.cpp" />
     <ClCompile Include="WinMain.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GameProcess.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
