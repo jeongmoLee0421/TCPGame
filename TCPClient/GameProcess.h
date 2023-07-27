@@ -14,7 +14,7 @@ public:
 	GameProcess();
 	~GameProcess();
 
-	HRESULT Initialize(HINSTANCE hInstance, int nCmdShow);
+	HRESULT Initialize(HINSTANCE hInstance, LPSTR lpCmdLine, int nCmdShow);
 	HRESULT Finalize();
 
 public:
@@ -26,6 +26,10 @@ private:
 
 	void Update();
 	void Render();
+
+private:
+	void ConnectServer(LPSTR lpCmdLine);
+	void WSAErrorHandling();
 
 public:
 	using GETRENDERER = IRenderer * (*)();

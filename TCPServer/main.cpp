@@ -222,7 +222,7 @@ int main(int argc, char* argv[])
 		WSAErrorHandling("listen");
 	}
 
-	SOCKADDR_IN clientAddress;
+	SOCKADDR_IN clientAddress{};
 	int clientAddressSize = sizeof(clientAddress);
 
 	// client로부터 연결 요청이 들어오면 수락하면서 해당 클라이언트와 통신하는 소켓을 새롭게 생성
@@ -232,15 +232,25 @@ int main(int argc, char* argv[])
 		WSAErrorHandling("accept");
 	}
 
-	char message[30]{ "hello client\n" };
-	int messageLength = static_cast<int>(strlen(message));
+	const char* str = "hello client\n";
+	char message[30]{};
+
+	// client가 자신이 수신할 메시지의 길이를 모른다면
+	// 서버는 전송할 메시지의 길이를 알려줘야 한다.
+	// 그래서 message의 가장 첫 비트에 메시지의 길이를 넘겼음
+	int messageLength = static_cast<int>(strlen(str));
+	message[0] = static_cast<char>(messageLength);
+	strcpy_s(&message[1], sizeof(message) - 1, str);
+
 	int totalSendByte = 0;
+	// 메시지 내용 + 메시지 길이를 알려주는 1비트
+	int numOfBytesToTransfer = messageLength + 1;
 
 	// tcp 통신이기 때문에 내가 전송하고자 하는 바이트를 전부 전송할때까지 send()를 반복 호출
-	while (totalSendByte < messageLength)
+	while (totalSendByte < numOfBytesToTransfer)
 	{
 		// send()는 전송할 데이터를 어느 위치에서 몇 바이트를 보낼지에 대한 정보를 잘 넣어줘야 함
-		int currentSendByte = send(clientSocket, message + totalSendByte, messageLength - totalSendByte, 0);
+		int currentSendByte = send(clientSocket, message + totalSendByte, numOfBytesToTransfer - totalSendByte, 0);
 		if (currentSendByte == SOCKET_ERROR)
 		{
 			WSAErrorHandling("send");
