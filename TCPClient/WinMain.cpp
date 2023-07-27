@@ -10,7 +10,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 {
 	GameProcess* pGameProcess = new GameProcess{};
 
-	if (FAILED(pGameProcess->Initialize(hInstance, nCmdShow)))
+	if (FAILED(pGameProcess->Initialize(hInstance, lpCmdLine, nCmdShow)))
 	{
 		return -1;
 	}
