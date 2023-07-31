@@ -1,8 +1,15 @@
 ﻿#pragma once
 
+#define _WINSOCKAPI_
 #include <Windows.h>
+#include <WinSock2.h>
 
 class IRenderer;
+
+namespace std
+{
+	class thread;
+}
 
 // 2023 07 24 이정모 home
 
@@ -28,7 +35,25 @@ private:
 	void Render();
 
 private:
-	void ConnectServer(LPSTR lpCmdLine);
+	void InitSocketCommunicate(LPSTR lpCmdLine);
+	void InitWSAData();
+	void MakeClientSocket();
+	void FillServerInformation();
+	void ConnectServer();
+	void WaitForThreadToEnd();
+	void CleanWSAData();
+
+private:
+	// 송신 thread와 수신 thread를 분리하여
+	// 병렬적으로 송수신 처리
+	static void SendPacketToServer(GameProcess* pGameProcess);
+	static void RecvPacketFromServer(GameProcess* pGameProcess);
+
+private:
+	void ParsingServerInformation(LPSTR lpCmdLine);
+	void SkipWhitespaceCharacters(const char* str);
+
+private:
 	void WSAErrorHandling();
 
 public:
@@ -41,6 +66,17 @@ private:
 
 	GETRENDERER GetRenderer;
 	RELEASERENDERER ReleaseRenderer;
+
+private:
+	char mServerIp[16];
+	char mServerPort[6];
+
+	WSADATA mWSAData;
+	SOCKET mClientSocket;
+	SOCKADDR_IN mServerAddress;
+
+	std::thread* mSendThread;
+	std::thread* mRecvThread;
 
 private:
 	HWND mHwnd;

@@ -43,46 +43,15 @@ void MainServer::Initialize(int argc, char** argv)
 		exit(EXIT_FAILURE);
 	}
 
-	int wsaErrorCode = WSAStartup(MAKEWORD(2, 2), &mWSAData);
-	if (wsaErrorCode != 0)
-	{
-		printf("WSAStartup() error\n");
-		assert(wsaErrorCode == 0);
-		exit(EXIT_FAILURE);
-	}
+	InitWSAData();
 
-	// ip version 4, tcp socket
-	mServerSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (mServerSocket == INVALID_SOCKET)
-	{
-		printf("socket() error\n");
-		WSAErrorHandling();
-	}
+	MakeServerSocket();
 
-	memset(&mServerAddress, 0x00, sizeof(mServerAddress));
-	mServerAddress.sin_family = AF_INET;
+	BindServerSocket(argv);
 
-	// host byte order -> network byte order
-	mServerAddress.sin_addr.S_un.S_addr = htonl(INADDR_ANY);
-	mServerAddress.sin_port = htons(atoi(argv[1]));
+	ChangeToListeningState();
 
-	// 운영체제에게 mServerSocket이
-	// 지정한 서버 주소와 포트 번호로 넘어오는 데이터를 수신하겠다고 등록
-	if (bind(
-		mServerSocket,
-		reinterpret_cast<SOCKADDR*>(&mServerAddress),
-		sizeof(mServerAddress))
-		== SOCKET_ERROR)
-	{
-		printf("bind() error\n");
-		WSAErrorHandling();
-	}
-
-	if (listen(mServerSocket, 5) == SOCKET_ERROR)
-	{
-		printf("listen() error\n");
-		WSAErrorHandling();
-	}
+	AcceptClient();
 }
 
 void MainServer::Finalize()
@@ -111,6 +80,60 @@ void MainServer::Finalize()
 	if (WSACleanup() == SOCKET_ERROR)
 	{
 		printf("WSACleanup() error\n");
+		WSAErrorHandling();
+	}
+}
+
+void MainServer::InitWSAData()
+{
+	int wsaErrorCode = WSAStartup(MAKEWORD(2, 2), &mWSAData);
+
+	if (wsaErrorCode != 0)
+	{
+		printf("WSAStartup() error\n");
+		assert(wsaErrorCode == 0);
+		exit(EXIT_FAILURE);
+	}
+}
+
+void MainServer::MakeServerSocket()
+{
+	// ip version 4, tcp socket
+	mServerSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (mServerSocket == INVALID_SOCKET)
+	{
+		printf("socket() error\n");
+		WSAErrorHandling();
+	}
+}
+
+void MainServer::BindServerSocket(char** argv)
+{
+	memset(&mServerAddress, 0x00, sizeof(mServerAddress));
+	mServerAddress.sin_family = AF_INET;
+
+	// host byte order -> network byte order
+	mServerAddress.sin_addr.S_un.S_addr = htonl(INADDR_ANY);
+	mServerAddress.sin_port = htons(atoi(argv[1]));
+
+	// 운영체제에게 mServerSocket이
+	// 지정한 서버 주소와 포트 번호로 넘어오는 데이터를 수신하겠다고 등록
+	if (bind(
+		mServerSocket,
+		reinterpret_cast<SOCKADDR*>(&mServerAddress),
+		sizeof(mServerAddress))
+		== SOCKET_ERROR)
+	{
+		printf("bind() error\n");
+		WSAErrorHandling();
+	}
+}
+
+void MainServer::ChangeToListeningState()
+{
+	if (listen(mServerSocket, 5) == SOCKET_ERROR)
+	{
+		printf("listen() error\n");
 		WSAErrorHandling();
 	}
 }
@@ -177,29 +200,59 @@ void MainServer::ProcessClient(SOCKET clientSocket, MainServer* pMainServer)
 	// 연결된 client로부터 패킷을 수신하면
 	// 이를 구분해서 작업을 처리하는 함수
 
-	const char* str = "hello client\n";
-	char message[30]{};
-
-	int messageLength = static_cast<int>(strlen(str));
-
-	// 가장 첫 비트에 메시지의 길이 정보를 담았다.
-	message[0] = static_cast<char>(messageLength);
-	strcpy_s(&message[1], sizeof(message) - 1, str);
-
-	int totalSendByte = 0;
-	int numOfBytesToTransfer = messageLength + 1;
-
-	while (totalSendByte < numOfBytesToTransfer)
+	char cMessageLength{};
+	int recvByte = recv(clientSocket, &cMessageLength, 1, 0);
+	if (recvByte == SOCKET_ERROR)
 	{
-		// send()는 전송할 데이터를 어느 위치에서 몇 바이트를 보낼지에 대한 정보를 잘 넣어줘야 함
-		int currentSendByte = send(clientSocket, message + totalSendByte, numOfBytesToTransfer - totalSendByte, 0);
-		if (currentSendByte == SOCKET_ERROR)
+		printf("recv() error\n");
+		pMainServer->WSAErrorHandling();
+	}
+
+	int iMessageLength = static_cast<int>(cMessageLength);
+	int totalByteReceived = iMessageLength;
+	int currentByteReceived = 0;
+	char recvMessage[30]{};
+
+	while (currentByteReceived < totalByteReceived)
+	{
+		recvByte = recv(clientSocket, &recvMessage[currentByteReceived], totalByteReceived - currentByteReceived, 0);
+
+		// 일단 지금은 문자열을 받는 상황이기 때문에
+		// 문자열 길이를 다 받으면 while문을 탈출하게 되어있음.
+		// 추후에는 계속 패킷을 주고 받다가 client가 접속 종료하면 while문을 탈출할 것임
+		if (recvByte == 0)
+		{
+			break;
+		}
+		else if (recvByte == SOCKET_ERROR)
+		{
+			printf("recv() error");
+			pMainServer->WSAErrorHandling();
+		}
+
+		currentByteReceived += recvByte;
+	}
+
+	recvMessage[currentByteReceived] = '\0';
+	printf("%s\n", recvMessage);
+
+	char sendMessage[30]{};
+	memcpy(&sendMessage[0], &cMessageLength, 1);
+	memcpy(&sendMessage[1], &recvMessage[0], iMessageLength);
+
+	// 전송할 문자열 길이 +1비트
+	int totalByteToSend = currentByteReceived + 1;
+	int currentByteToSend = 0;
+	while (currentByteToSend < totalByteToSend)
+	{
+		int sendByte = send(clientSocket, &sendMessage[currentByteToSend], totalByteToSend - currentByteToSend, 0);
+		if (sendByte == SOCKET_ERROR)
 		{
 			printf("send() error\n");
 			pMainServer->WSAErrorHandling();
 		}
 
-		totalSendByte += currentSendByte;
+		currentByteToSend += sendByte;
 	}
 
 	std::unique_lock clientInfoLock{ pMainServer->GetClientMutex() };

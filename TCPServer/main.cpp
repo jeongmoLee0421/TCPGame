@@ -10,8 +10,6 @@ int main(int argc, char* argv[])
 
 	pMainServer->Initialize(argc, argv);
 
-	pMainServer->AcceptClient();
-
 	pMainServer->Finalize();
 
 	delete pMainServer;

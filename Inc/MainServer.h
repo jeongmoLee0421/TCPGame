@@ -23,7 +23,11 @@ public:
 	void Initialize(int argc, char** argv);
 	void Finalize();
 
-public:
+private:
+	void InitWSAData();
+	void MakeServerSocket();
+	void BindServerSocket(char** argv);
+	void ChangeToListeningState();
 	void AcceptClient();
 
 private:
