@@ -5,12 +5,18 @@ VisualStudioVersion = 17.3.32901.215
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TCPClient", "TCPClient\TCPClient.vcxproj", "{9D5307F4-8584-4A8F-A70C-73CCEC840FE4}"
 	ProjectSection(ProjectDependencies) = postProject
+		{4B99CDE4-2536-4CDA-B2F2-EB89C630581C} = {4B99CDE4-2536-4CDA-B2F2-EB89C630581C}
 		{BE5C4449-8268-4CB4-A2E7-36AC8B2BFEC9} = {BE5C4449-8268-4CB4-A2E7-36AC8B2BFEC9}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3DRenderer", "3DRenderer\3DRenderer.vcxproj", "{BE5C4449-8268-4CB4-A2E7-36AC8B2BFEC9}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TCPServer", "TCPServer\TCPServer.vcxproj", "{0D4EAF73-F192-403A-9097-FB4A47CA836F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4B99CDE4-2536-4CDA-B2F2-EB89C630581C} = {4B99CDE4-2536-4CDA-B2F2-EB89C630581C}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CommonLibrary", "CommonLibrary\CommonLibrary.vcxproj", "{4B99CDE4-2536-4CDA-B2F2-EB89C630581C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,6 +50,14 @@ Global
 		{0D4EAF73-F192-403A-9097-FB4A47CA836F}.Release|x64.Build.0 = Release|x64
 		{0D4EAF73-F192-403A-9097-FB4A47CA836F}.Release|x86.ActiveCfg = Release|Win32
 		{0D4EAF73-F192-403A-9097-FB4A47CA836F}.Release|x86.Build.0 = Release|Win32
+		{4B99CDE4-2536-4CDA-B2F2-EB89C630581C}.Debug|x64.ActiveCfg = Debug|x64
+		{4B99CDE4-2536-4CDA-B2F2-EB89C630581C}.Debug|x64.Build.0 = Debug|x64
+		{4B99CDE4-2536-4CDA-B2F2-EB89C630581C}.Debug|x86.ActiveCfg = Debug|Win32
+		{4B99CDE4-2536-4CDA-B2F2-EB89C630581C}.Debug|x86.Build.0 = Debug|Win32
+		{4B99CDE4-2536-4CDA-B2F2-EB89C630581C}.Release|x64.ActiveCfg = Release|x64
+		{4B99CDE4-2536-4CDA-B2F2-EB89C630581C}.Release|x64.Build.0 = Release|x64
+		{4B99CDE4-2536-4CDA-B2F2-EB89C630581C}.Release|x86.ActiveCfg = Release|Win32
+		{4B99CDE4-2536-4CDA-B2F2-EB89C630581C}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -4,10 +4,21 @@
     <Filter Include="EntryPoint">
       <UniqueIdentifier>{8bb1971c-15d2-4a0a-9bbf-e697d05a741b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Server">
+      <UniqueIdentifier>{648c197c-708a-4368-abd2-af4e437046bc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>EntryPoint</Filter>
     </ClCompile>
+    <ClCompile Include="MainServer.cpp">
+      <Filter>Server</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MainServer.h">
+      <Filter>Server</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
