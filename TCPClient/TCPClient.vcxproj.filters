@@ -7,6 +7,9 @@
     <Filter Include="GameProcess">
       <UniqueIdentifier>{d1a51e4d-ba66-495d-8ab7-2cdf2996fb45}</UniqueIdentifier>
     </Filter>
+    <Filter Include="TCPNetwork">
+      <UniqueIdentifier>{f98626e5-320a-40fc-972f-b5c759967f2a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinMain.cpp">
@@ -15,10 +18,16 @@
     <ClCompile Include="GameProcess.cpp">
       <Filter>GameProcess</Filter>
     </ClCompile>
+    <ClCompile Include="TCPNetwork.cpp">
+      <Filter>TCPNetwork</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameProcess.h">
       <Filter>GameProcess</Filter>
+    </ClInclude>
+    <ClInclude Include="TCPNetwork.h">
+      <Filter>TCPNetwork</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
