@@ -132,6 +132,7 @@ copy "$(ProjectDir)ConceptDefine.h" "$(SolutionDir)Inc\ConceptDefine.h"</Command
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;MY3DRENDERER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

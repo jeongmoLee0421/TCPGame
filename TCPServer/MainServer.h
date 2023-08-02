@@ -7,6 +7,7 @@
 
 class Player;
 class std::thread;
+enum class ePacketHeader :unsigned short;
 
 // 2023 07 27 이정모 home
 
@@ -32,6 +33,7 @@ private:
 
 private:
 	static void ProcessClient(SOCKET clientSocket, MainServer* pMainServer);
+	static void ProcessPacket(ePacketHeader packetHeader, SOCKET clientSocket, MainServer* pMainServer);
 
 public:
 	// mutex class는 복사 생성/대입을 delete했고 -> 값 복사 불가
