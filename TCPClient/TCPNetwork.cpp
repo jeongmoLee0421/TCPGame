@@ -3,10 +3,15 @@
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 #include <thread>
+#include <cstring>
+#include <exception>
 
 #include "TCPNetwork.h"
+#include "../Inc/PacketEnum.h"
+#include "../Inc/PacketDefine.h"
 
 #pragma comment(lib, "ws2_32")
+#pragma comment(lib, "../Lib/CommonLibrary")
 
 TCPNetwork::TCPNetwork()
 	: mServerIp{}
@@ -16,6 +21,7 @@ TCPNetwork::TCPNetwork()
 	, mServerAddress{}
 	, mSendThread{ nullptr }
 	, mRecvThread{ nullptr }
+	, mMyPlayerData{ nullptr }
 {
 }
 
@@ -30,6 +36,8 @@ void TCPNetwork::Initialize(LPSTR lpCmdLine)
 
 void TCPNetwork::Finalize()
 {
+	delete mMyPlayerData;
+
 	// 스레드가 완전히 종료되길 기다림
 	WaitForThreadToEnd();
 	CleanWSAData();
@@ -42,81 +50,89 @@ void TCPNetwork::Finalize()
 
 void TCPNetwork::SendPacketToServer(TCPNetwork* pTCPNetwork)
 {
-	const char* message = "hello server";
 
-	int iMessageLength = static_cast<int>(strlen(message));
-	char cMessageLength = static_cast<char>(iMessageLength);
-
-	char sendData[30]{};
-	memcpy(&sendData[0], &cMessageLength, 1);
-
-	// 그럴일은 없지만 보낼 바이트 수에 int가 음수로 들어가게 되면
-	// unsigned long long을 받는 strcpy_s()는 MSB가 1로 세팅된 이 수를 매우 큰 수로 해석하기 때문에 문제가 발생할 수 있음
-	strcpy_s(&sendData[1], static_cast<rsize_t>(30 - 1), message);
-
-	// 첫번째 비트는 message의 길이 정보
-	int totalByteToSend = iMessageLength + 1;
-	int currentByteToSend = 0;
-
-	while (currentByteToSend < totalByteToSend)
-	{
-		// 정적 멤버 변수이기 때문에 this가 존재하지 않는다.
-		// this를 매개 변수로 받아서 사용하자.
-		int sendByte = send(pTCPNetwork->mClientSocket, &sendData[currentByteToSend], totalByteToSend - currentByteToSend, 0);
-
-		if (sendByte == SOCKET_ERROR)
-		{
-			pTCPNetwork->WSAErrorHandling();
-		}
-
-		currentByteToSend += sendByte;
-	}
-
-	// 더 이상 보낼 데이터가 없고
-	// 수신할 데이터만 존재하기 때문에
-	// 출력 스트림만 닫는다.
-	if (shutdown(pTCPNetwork->mClientSocket, SD_SEND) == SOCKET_ERROR)
-	{
-		pTCPNetwork->WSAErrorHandling();
-	}
 }
 
 void TCPNetwork::RecvPacketFromServer(TCPNetwork* pTCPNetwork)
 {
-	char cMessageLength{};
-	int recvByte = recv(pTCPNetwork->mClientSocket, &cMessageLength, 1, 0);
-	if (recvByte == SOCKET_ERROR)
-	{
-		pTCPNetwork->WSAErrorHandling();
-	}
+	// packet의 header를 먼저 받아서 ProcessPacket()으로 보낸다.
 
-	int iMessageLength = static_cast<int>(cMessageLength);
+	PacketHeader packetHeader{};
+	char packetHeaderData[sizeof(packetHeader)]{};
 
-	char sendData[30]{};
-	int totalByteReceived = iMessageLength;
+	int totalByteReceived = sizeof(packetHeader);
 	int currentByteReceived = 0;
+
 	while (currentByteReceived < totalByteReceived)
 	{
-		recvByte = recv(pTCPNetwork->mClientSocket, &sendData[currentByteReceived], totalByteReceived - currentByteReceived, 0);
+		int recvByte = recv(
+			pTCPNetwork->mClientSocket,
+			&packetHeaderData[0] + currentByteReceived,
+			totalByteReceived - currentByteReceived,
+			0
+		);
 
-		// 연결이 정상적으로 닫힌 경우
-		if (recvByte == 0)
+		if (recvByte == SOCKET_ERROR)
 		{
-			break;
-		}
-		else if (recvByte == SOCKET_ERROR)
-		{
+			assert(nullptr && "recv() error");
 			pTCPNetwork->WSAErrorHandling();
 		}
 
 		currentByteReceived += recvByte;
 	}
 
-	sendData[currentByteReceived] = '\0';
+	packetHeader.Deserialize(&packetHeaderData[0]);
 
-	if (shutdown(pTCPNetwork->mClientSocket, SD_RECEIVE) == SOCKET_ERROR)
+	ProcessPacket(packetHeader.mPacketHeader, pTCPNetwork);
+}
+
+void TCPNetwork::ProcessPacket(ePacketHeader packetHeader, TCPNetwork* pTCPNetwork)
+{
+	switch (packetHeader)
 	{
-		pTCPNetwork->WSAErrorHandling();
+	case ePacketHeader::S2C_LoadData:
+	{
+		// 패킷 헤더는 이미 위에서 한번 받았음
+		int totalByteRecevied{ sizeof(PacketPlayer) - sizeof(PacketHeader) };
+		int currentByteRecevied{ 0 };
+
+		PacketPlayer packetPlayer{};
+		char recvBuf[512]{};
+
+		while (currentByteRecevied < totalByteRecevied)
+		{
+			int recvByte = recv(
+				pTCPNetwork->mClientSocket,
+				&recvBuf[0] + currentByteRecevied,
+				totalByteRecevied - currentByteRecevied,
+				0);
+
+			if (recvByte == SOCKET_ERROR)
+			{
+				printf("ProcessPacket() -> recv() error\n");
+				assert(nullptr && "ProcessPacket() -> recv() error");
+				pTCPNetwork->WSAErrorHandling();
+			}
+
+			currentByteRecevied += recvByte;
+		}
+
+		packetPlayer.Deserialize(&recvBuf[0]);
+
+		// server로부터 본인 데이터를 받으면 clientInfo에 넣어주자.
+		pTCPNetwork->mMyPlayerData = new Player{ packetPlayer.mPlayer };
+		pTCPNetwork->GetClientInfo().emplace(pTCPNetwork->mMyPlayerData->GetSocket(), pTCPNetwork->mMyPlayerData);
+	}
+	break;
+
+	case ePacketHeader::S2C_NewClientConnection:
+	{
+
+	}
+	break;
+
+	default:
+		break;
 	}
 }
 
@@ -132,8 +148,13 @@ void TCPNetwork::InitSocketCommunicate(LPSTR lpCmdLine)
 
 	ConnectServer();
 
-	mSendThread = new std::thread{ SendPacketToServer, this };
-	mRecvThread = new std::thread{ RecvPacketFromServer, this };
+	MakeThread();
+
+	// 처음 접속한 신규 유저라고 가정하고 초기 데이터를 받아옴
+	LoadDataFromServer();
+
+	// 기존 유저와 동기화
+	NotifyNewClientConnection();
 }
 
 void TCPNetwork::ParsingServerInformation(LPSTR lpCmdLine)
@@ -182,7 +203,7 @@ void TCPNetwork::InitWSAData()
 
 	if (wsaErrorCode != 0)
 	{
-		assert(wsaErrorCode == 0);
+		assert(nullptr && "InitWSAData() -> WSAStartup() error");
 		exit(EXIT_FAILURE);
 	}
 }
@@ -193,6 +214,7 @@ void TCPNetwork::MakeClientSocket()
 
 	if (mClientSocket == INVALID_SOCKET)
 	{
+		assert(nullptr && "MakeClientSocket() -> socket() error");
 		WSAErrorHandling();
 	}
 }
@@ -218,8 +240,47 @@ void TCPNetwork::ConnectServer()
 	// 이 때 운영체제는 이 client 프로세스의 포트 번호를 임의로 지정해주면서 네트워크로 패킷을 송신
 	if (connect(mClientSocket, reinterpret_cast<SOCKADDR*>(&mServerAddress), sizeof(mServerAddress)) == SOCKET_ERROR)
 	{
+		assert(nullptr && "ConnectServer() -> connect() error");
 		WSAErrorHandling();
 	}
+}
+
+void TCPNetwork::LoadDataFromServer()
+{
+	PacketHeader packetHeader{ ePacketHeader::C2S_LoadData };
+	char sendBuf[sizeof(packetHeader)]{};
+	packetHeader.Serialize(&sendBuf[0]);
+
+	int totalByteToSend{ sizeof(packetHeader) };
+	int currentByteToSend{ 0 };
+
+	while (currentByteToSend < totalByteToSend)
+	{
+		int sendByte = send(
+			mClientSocket,
+			&sendBuf[0] + currentByteToSend,
+			totalByteToSend - currentByteToSend,
+			0);
+
+		if (sendByte == SOCKET_ERROR)
+		{
+			assert(nullptr && "LoadDataFromServer() -> send() error");
+			WSAErrorHandling();
+		}
+
+		currentByteToSend += sendByte;
+	}
+}
+
+void TCPNetwork::MakeThread()
+{
+	mSendThread = new std::thread{ SendPacketToServer, this };
+	mRecvThread = new std::thread{ RecvPacketFromServer, this };
+}
+
+void TCPNetwork::NotifyNewClientConnection()
+{
+	// 기존에 server에 접속해 있던 유저들과 동기화하기 위한 패킷
 }
 
 void TCPNetwork::WaitForThreadToEnd()
@@ -232,6 +293,7 @@ void TCPNetwork::CleanWSAData()
 {
 	if (WSACleanup() == SOCKET_ERROR)
 	{
+		assert(nullptr && "CleanWSAData() -> WSACleanup() error");
 		WSAErrorHandling();
 	}
 }
@@ -239,7 +301,10 @@ void TCPNetwork::CleanWSAData()
 void TCPNetwork::WSAErrorHandling()
 {
 	int wsaErrorCode = WSAGetLastError();
-
-	assert(wsaErrorCode == 0);
 	exit(EXIT_FAILURE);
+}
+
+std::unordered_map<SOCKET, Player*>& TCPNetwork::GetClientInfo()
+{
+	return mClientInfo;
 }

@@ -114,7 +114,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PreBuildEvent>
-      <Command>copy /y "$(ProjectDir)Player.h" "$(SolutionDir)Inc\Player.h"</Command>
+      <Command>copy /y "$(ProjectDir)Player.h" "$(SolutionDir)Inc\Player.h"
+copy /y "$(ProjectDir)PacketEnum.h" "$(SolutionDir)Inc\PacketEnum.h"
+copy /y "$(ProjectDir)PacketDefine.h" "$(SolutionDir)Inc\PacketDefine.h"</Command>
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>copy /y "$(OutDir)CommonLibrary.lib" "$(SolutionDir)Lib\CommonLibrary.lib"</Command>
@@ -128,6 +130,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -138,9 +141,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="PacketDefine.cpp" />
     <ClCompile Include="Player.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="PacketDefine.h" />
+    <ClInclude Include="PacketEnum.h" />
     <ClInclude Include="Player.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

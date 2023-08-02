@@ -10,6 +10,8 @@
 
 #include "MainServer.h"
 #include "../Inc/Player.h"
+#include "../Inc/PacketEnum.h"
+#include "../Inc/PacketDefine.h"
 
 #pragma comment(lib, "ws2_32")
 #pragma comment(lib, "../Lib/CommonLibrary")
@@ -80,6 +82,7 @@ void MainServer::Finalize()
 	if (WSACleanup() == SOCKET_ERROR)
 	{
 		printf("WSACleanup() error\n");
+		assert(nullptr && "Finalize() -> WSACleanup() error");
 		WSAErrorHandling();
 	}
 }
@@ -91,7 +94,7 @@ void MainServer::InitWSAData()
 	if (wsaErrorCode != 0)
 	{
 		printf("WSAStartup() error\n");
-		assert(wsaErrorCode == 0);
+		assert(nullptr && "InitWSAData() -> WSAStartup() error");
 		exit(EXIT_FAILURE);
 	}
 }
@@ -103,6 +106,7 @@ void MainServer::MakeServerSocket()
 	if (mServerSocket == INVALID_SOCKET)
 	{
 		printf("socket() error\n");
+		assert(nullptr && "MakeServerSocket() -> socket() error");
 		WSAErrorHandling();
 	}
 }
@@ -125,6 +129,7 @@ void MainServer::BindServerSocket(char** argv)
 		== SOCKET_ERROR)
 	{
 		printf("bind() error\n");
+		assert(nullptr && "BindServerSocket() -> bind() error");
 		WSAErrorHandling();
 	}
 }
@@ -134,6 +139,7 @@ void MainServer::ChangeToListeningState()
 	if (listen(mServerSocket, 5) == SOCKET_ERROR)
 	{
 		printf("listen() error\n");
+		assert(nullptr && "ChangeToListeningState() -> listen() error");
 		WSAErrorHandling();
 	}
 }
@@ -141,11 +147,6 @@ void MainServer::ChangeToListeningState()
 void MainServer::AcceptClient()
 {
 	mClientAddressSize = sizeof(mClientAddress);
-
-	// defer_lock으로 unique_lock을 생성하면
-	// 생성할 때는 mutex를 소유하지 않고 있다가
-	// 내가 원하는 타이밍에 lock()을 호출해서 mutex를 소유할 수 있다.
-	std::unique_lock clientInfoLock{ mClientMutex, std::defer_lock };
 
 	try
 	{
@@ -161,37 +162,25 @@ void MainServer::AcceptClient()
 			if (mClientSocket == INVALID_SOCKET)
 			{
 				printf("accept() error\n");
+				assert(nullptr && "AcceptClient() -> accept() error");
 				WSAErrorHandling();
 			}
-
-			Player* newPlayer = new Player{ mClientSocket, 0.f, 0.f, 0.f };
-
-			clientInfoLock.lock();
-
-			mClientInfo.emplace(mClientSocket, newPlayer);
-
-			clientInfoLock.unlock();
 
 			// thread는 멤버 함수를 수행할 수 없음
 			// 멤버 함수란 this가 있어야 호출 가능한 함수인데
 			// 그렇다면 thread가 작업할 함수가 멤버 함수면 항상 this가 필요하다는 것이고
 			// 이런 방식은 말이 되지 않는다.
 			// 그래서 static을 붙여서 class의 instance 여부와 상관없는 함수로 만들었다.
-			std::thread* newThread = new std::thread{ ProcessClient, mClientSocket, this };
+			std::thread* newThread = new std::thread{ MainServer::ProcessClient, mClientSocket, this };
 
 			// thread list 데이터 수정은 이곳뿐이어서
 			// 굳이 lock을 걸지 않았음
 			mThreadList.push_back(newThread);
 		}
 	}
-	// lock() 호출 후 mutex를 소유한 상태에서 예외가 발생했을 때
-	// 이를 catch하면 함수 호출이 종료되면서 스택 프레임이 해제되는데
-	// 이 때 지역변수인 unique_lock이 소멸하면서 mutex를 소유한 상태라면
-	// unlock()을 호출해서 mutex 소유권을 해제함.
-	// 즉, mutex를 소유한 상태에서 예외가 발생하더라도 안전하게 mutex 소유권을 해제할 수 있다.
 	catch (std::exception& e)
 	{
-		printf("exception: %s", e.what());
+		printf("AcceptClient() -> exception: %s", e.what());
 	}
 }
 
@@ -199,84 +188,124 @@ void MainServer::ProcessClient(SOCKET clientSocket, MainServer* pMainServer)
 {
 	// 연결된 client로부터 패킷을 수신하면
 	// 이를 구분해서 작업을 처리하는 함수
+	// client당 thread가 1개씩 대응되기 때문에
+	// socket 번호는 이미 알고 있음
+	// 다만 작업 단위로 thread가 구성되지 않고
+	// client 단위로 thread가 구성된다면
+	// thread의 최대 생성 개수로 clinet의 최대 접속자 수가 제한됨
 
-	char cMessageLength{};
-	int recvByte = recv(clientSocket, &cMessageLength, 1, 0);
-	if (recvByte == SOCKET_ERROR)
+	PacketHeader packetHeader{};
+	char packetHeaderData[sizeof(PacketHeader)]{};
+
+	try
 	{
-		printf("recv() error\n");
-		pMainServer->WSAErrorHandling();
-	}
+		int totalByteRecevied{ sizeof(packetHeader) };
+		int currentByteReceived{ 0 };
 
-	int iMessageLength = static_cast<int>(cMessageLength);
-	int totalByteReceived = iMessageLength;
-	int currentByteReceived = 0;
-	char recvMessage[30]{};
-
-	while (currentByteReceived < totalByteReceived)
-	{
-		recvByte = recv(clientSocket, &recvMessage[currentByteReceived], totalByteReceived - currentByteReceived, 0);
-
-		// 일단 지금은 문자열을 받는 상황이기 때문에
-		// 문자열 길이를 다 받으면 while문을 탈출하게 되어있음.
-		// 추후에는 계속 패킷을 주고 받다가 client가 접속 종료하면 while문을 탈출할 것임
-		if (recvByte == 0)
+		while (currentByteReceived < totalByteRecevied)
 		{
+			int recvByte = recv(
+				clientSocket,
+				&packetHeaderData[0] + currentByteReceived,
+				totalByteRecevied - currentByteReceived,
+				0);
+
+			if (recvByte == SOCKET_ERROR)
+			{
+				printf("ProcessClient() -> recv() error\n");
+				assert(nullptr && "ProcessClient() -> recv() error");
+				pMainServer->WSAErrorHandling();
+			}
+
+			currentByteReceived += recvByte;
+		}
+
+		packetHeader.Deserialize(&packetHeaderData[0]);
+
+		MainServer::ProcessPacket(packetHeader.mPacketHeader, clientSocket, pMainServer);
+	}
+	catch (std::exception& e)
+	{
+		printf("ProcessClient() -> exception: %s", e.what());
+	}
+}
+
+void MainServer::ProcessPacket(ePacketHeader packetHeader, SOCKET clientSocket, MainServer* pMainServer)
+{
+	// 참조로 받지 않으면 복사본이 된다.
+	auto& clientInfo{ pMainServer->GetClientInfo() };
+
+	// defer_lock을 통해 내가 원하는 타이밍에 lock을 걸 수 있다.
+	std::unique_lock<std::mutex> clientLock{ pMainServer->GetClientMutex(), std::defer_lock };
+
+	try
+	{
+		switch (packetHeader)
+		{
+		case ePacketHeader::C2S_LoadData:
+		{
+			// 일단은 모든 client가 새롭게 계정을 생성해서 접속했다고 가정
+			// 추후에는 기존 유저인지 아닌지 판단해서 DB에서 데이터를 꺼내주도록 변경하자
+
+			Player* newPlayer = new Player{ clientSocket, 0.f, 0.f, 0.f };
+
+			clientLock.lock();
+
+			pMainServer->GetClientInfo().emplace(clientSocket, newPlayer);
+
+			clientLock.unlock();
+
+			PacketPlayer packetPlayer{};
+			packetPlayer.mPacketHeader = ePacketHeader::S2C_LoadData;
+
+			// player 구조체에 포인터 변수가 없기 때문에
+			// 복사 대입이나 이동 대입이나 아직은 차이가 없음
+			packetPlayer.mPlayer = *newPlayer;
+
+			int totalByteToSend = sizeof(packetPlayer);
+			int currentByteToSend = 0;
+
+			char sendBuf[512]{};
+			packetPlayer.Serialize(&sendBuf[0]);
+
+			while (currentByteToSend < totalByteToSend)
+			{
+				int sendByte = send(
+					clientSocket,
+					&sendBuf[0] + currentByteToSend,
+					totalByteToSend - currentByteToSend,
+					0);
+
+				if (sendByte == SOCKET_ERROR)
+				{
+					printf("ProcessPacket() -> send() error\n");
+					assert(nullptr && "ProcessPacket() -> send() error");
+					pMainServer->WSAErrorHandling();
+				}
+
+				currentByteToSend += sendByte;
+			}
+		}
+		break;
+
+		case ePacketHeader::C2S_NewClientConnection:
+		{
+
+		}
+		break;
+
+		default:
 			break;
 		}
-		else if (recvByte == SOCKET_ERROR)
-		{
-			printf("recv() error");
-			pMainServer->WSAErrorHandling();
-		}
-
-		currentByteReceived += recvByte;
 	}
-
-	recvMessage[currentByteReceived] = '\0';
-	printf("%s\n", recvMessage);
-
-	char sendMessage[30]{};
-	memcpy(&sendMessage[0], &cMessageLength, 1);
-	memcpy(&sendMessage[1], &recvMessage[0], iMessageLength);
-
-	// 전송할 문자열 길이 +1비트
-	int totalByteToSend = currentByteReceived + 1;
-	int currentByteToSend = 0;
-	while (currentByteToSend < totalByteToSend)
+	// 예외가 발생했을 때 잡는다면
+	// 이 함수의 스택 메모리가 정상적으로 해제되고
+	// unique_lock의 소멸자가 호출되는데, 이 때 mutex의 소유권을 가지고 있다면
+	// mutex의 소유권을 해제(unlock())하기 때문에
+	// 안전하게 mutex를 사용할 수 있음
+	catch (std::exception& e)
 	{
-		int sendByte = send(clientSocket, &sendMessage[currentByteToSend], totalByteToSend - currentByteToSend, 0);
-		if (sendByte == SOCKET_ERROR)
-		{
-			printf("send() error\n");
-			pMainServer->WSAErrorHandling();
-		}
-
-		currentByteToSend += sendByte;
-	}
-
-	std::unique_lock clientInfoLock{ pMainServer->GetClientMutex() };
-
-	auto it = pMainServer->GetClientInfo().find(clientSocket);
-	if (it == pMainServer->GetClientInfo().end())
-	{
-		assert(nullptr && "do not find client info");
-	}
-
-	// 접속을 종료한 client의 Player 정보 제거 후 hash table에서 삭제
-	delete it->second;
-	pMainServer->GetClientInfo().erase(it);
-
-	clientInfoLock.unlock();
-
-	// table에서 client 정보를 제거했기 때문에
-	// 해당 client에는 더 이상 패킷을 전송되지 않음
-	// 안전하게 socket만 닫아주면 되기 때문에
-	// closesocket()은 lock() 밖에서 수행했음
-	if (closesocket(clientSocket) == SOCKET_ERROR)
-	{
-		printf("closesocket() error\n");
-		pMainServer->WSAErrorHandling();
+		printf("ProcessPacket() -> exception: %s", e.what());
 	}
 }
 
@@ -293,8 +322,7 @@ std::unordered_map<SOCKET, Player*>& MainServer::GetClientInfo()
 void MainServer::WSAErrorHandling()
 {
 	int wsaErrorCode = WSAGetLastError();
-	printf("WSAErrorCode: %d\n", wsaErrorCode);
 
-	assert(wsaErrorCode == 0);
+	printf("WSAErrorCode: %d\n", wsaErrorCode);
 	exit(EXIT_FAILURE);
 }
