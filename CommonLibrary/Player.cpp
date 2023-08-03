@@ -5,26 +5,26 @@
 
 Player::Player()
 	: mSocket{}
-	, mX{}, mY{}, mZ{}
+	, mPosition{}
 {
 }
 
 Player::Player(SOCKET socket,
 	float x, float y, float z)
 	: mSocket{ socket }
-	, mX{ x }, mY{ y }, mZ{ z }
+	, mPosition{ x,y,z }
 {
 }
 
 Player::Player(const Player& ref)
 	: mSocket{ ref.mSocket }
-	, mX{ ref.mX }, mY{ ref.mY }, mZ{ ref.mZ }
+	, mPosition{ ref.mPosition }
 {
 }
 
 Player::Player(Player&& ref) noexcept
 	: mSocket{ ref.mSocket }
-	, mX{ ref.mX }, mY{ ref.mY }, mZ{ ref.mZ }
+	, mPosition{ ref.mPosition }
 {
 	// Player class 멤버 변수로
 	// 동적 할당한 데이터에 대한 포인터 변수가 있었다면
@@ -35,9 +35,7 @@ Player::Player(Player&& ref) noexcept
 Player& Player::operator=(const Player& ref)
 {
 	mSocket = ref.mSocket;
-	mX = ref.mX;
-	mY = ref.mY;
-	mZ = ref.mZ;
+	mPosition = ref.mPosition;
 
 	return *this;
 }
@@ -45,9 +43,7 @@ Player& Player::operator=(const Player& ref)
 Player& Player::operator=(Player&& ref) noexcept
 {
 	mSocket = ref.mSocket;
-	mX = ref.mX;
-	mY = ref.mY;
-	mZ = ref.mZ;
+	mPosition = ref.mPosition;
 
 	return *this;
 }
@@ -64,14 +60,8 @@ char* Player::Serialize(char* buf)
 	memcpy(buf, &mSocket, sizeof(mSocket));
 	buf += sizeof(mSocket);
 
-	memcpy(buf, &mX, sizeof(mX));
-	buf += sizeof(mX);
-
-	memcpy(buf, &mY, sizeof(mY));
-	buf += sizeof(mY);
-
-	memcpy(buf, &mZ, sizeof(mZ));
-	buf += sizeof(mZ);
+	memcpy(buf, &mPosition, sizeof(mPosition));
+	buf += sizeof(mPosition);
 
 	return buf;
 }
@@ -81,14 +71,8 @@ char* Player::Deserialize(char* buf)
 	memcpy(&mSocket, buf, sizeof(mSocket));
 	buf += sizeof(mSocket);
 
-	memcpy(&mX, buf, sizeof(mX));
-	buf += sizeof(mX);
-
-	memcpy(&mY, buf, sizeof(mY));
-	buf += sizeof(mY);
-
-	memcpy(&mZ, buf, sizeof(mZ));
-	buf += sizeof(mZ);
+	memcpy(&mPosition, buf, sizeof(mPosition));
+	buf += sizeof(mPosition);
 
 	return buf;
 }
@@ -96,4 +80,9 @@ char* Player::Deserialize(char* buf)
 SOCKET Player::GetSocket()
 {
 	return mSocket;
+}
+
+math::Vector3 Player::GetPosition()
+{
+	return mPosition;
 }

@@ -116,7 +116,8 @@
     <PreBuildEvent>
       <Command>copy /y "$(ProjectDir)Player.h" "$(SolutionDir)Inc\Player.h"
 copy /y "$(ProjectDir)PacketEnum.h" "$(SolutionDir)Inc\PacketEnum.h"
-copy /y "$(ProjectDir)PacketDefine.h" "$(SolutionDir)Inc\PacketDefine.h"</Command>
+copy /y "$(ProjectDir)PacketDefine.h" "$(SolutionDir)Inc\PacketDefine.h"
+copy /y "$(ProjectDir)Vector3.h" "$(SolutionDir)Inc\Vector3.h"</Command>
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>copy /y "$(OutDir)CommonLibrary.lib" "$(SolutionDir)Lib\CommonLibrary.lib"</Command>
@@ -143,11 +144,13 @@ copy /y "$(ProjectDir)PacketDefine.h" "$(SolutionDir)Inc\PacketDefine.h"</Comman
   <ItemGroup>
     <ClCompile Include="PacketDefine.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Vector3.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PacketDefine.h" />
     <ClInclude Include="PacketEnum.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="Vector3.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

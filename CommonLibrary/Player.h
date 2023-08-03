@@ -2,6 +2,8 @@
 
 #include <WinSock2.h>
 
+#include "../Inc/Vector3.h"
+
 // 2023 07 28 이정모 home
 
 // client가 접속하면
@@ -38,9 +40,10 @@ public:
 
 public:
 	SOCKET GetSocket();
+	math::Vector3 GetPosition();
 
 private:
 	SOCKET mSocket;
-	float mX, mY, mZ;
+	math::Vector3 mPosition;
 };
 #pragma pack(pop)

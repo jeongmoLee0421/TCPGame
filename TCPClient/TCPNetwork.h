@@ -13,6 +13,7 @@ namespace std
 
 enum class ePacketHeader : unsigned short;
 class Player;
+class IRenderer;
 
 // 2023 07 31 이정모 home
 
@@ -27,6 +28,10 @@ public:
 
 	void Initialize(LPSTR lpCmdLine);
 	void Finalize();
+
+public:
+	// 자신을 포함한 server에 접속한 유저들을 그리기 위함
+	void Render(IRenderer* pRenderer);
 
 private:
 	// 송신 thread와 수신 thread를 분리하여
@@ -55,7 +60,7 @@ private:
 	void LoadDataFromServer();
 
 	// client가 server로부터 본인의 데이터를 받은 후
-	// 기존에 접속해있던 유저들과 동기화
+	// 기존에 server에 접속해 있던 유저들과 동기화하기 위한 패킷 전송
 	void NotifyNewClientConnection();
 
 private:
