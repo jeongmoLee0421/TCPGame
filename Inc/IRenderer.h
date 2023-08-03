@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "../Inc/Vector3.h"
+
 // 2023 07 24 이정모 home
 
 // renderer interface
@@ -11,11 +13,14 @@ public:
 	IRenderer() {}
 	virtual ~IRenderer() = 0 {}
 
-public:
 	virtual void Initialize(void* hWnd, long clientWidth, long clientHeight) = 0;
 	virtual void Finalize() = 0;
 
+public:
 	virtual void BeginRender() = 0;
 	virtual void Render() = 0;
 	virtual void EndRender() = 0;
+
+public:
+	virtual void DrawCube(math::Vector3 position) = 0;
 };

@@ -118,10 +118,14 @@
 copy "$(ProjectDir)DX11Renderer.h" "$(SolutionDir)Inc\DX11Renderer.h"
 
 copy "$(ProjectDir)DX11Define.h" "$(SolutionDir)Inc\DX11Define.h"
-copy "$(ProjectDir)ConceptDefine.h" "$(SolutionDir)Inc\ConceptDefine.h"</Command>
+copy "$(ProjectDir)ConceptDefine.h" "$(SolutionDir)Inc\ConceptDefine.h"
+copy "$(ProjectDir)ShaderDefine.h" "$(SolutionDir)Inc\ShaderDefine.h"</Command>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>copy "$(OutDir)3DRenderer.dll" "$(SolutionDir)Dll\3DRenderer.dll"</Command>
+      <Command>copy "$(OutDir)3DRenderer.dll" "$(SolutionDir)Dll\3DRenderer.dll"
+
+copy "$(OutDir)Color_VS.cso" "$(SolutionDir)Shader\Color_VS.cso"
+copy "$(OutDir)Color_PS.cso" "$(SolutionDir)Shader\Color_PS.cso"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -147,9 +151,28 @@ copy "$(ProjectDir)ConceptDefine.h" "$(SolutionDir)Inc\ConceptDefine.h"</Command
     <ClInclude Include="DX11Define.h" />
     <ClInclude Include="DX11Renderer.h" />
     <ClInclude Include="IRenderer.h" />
+    <ClInclude Include="ShaderDefine.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DX11Renderer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Color_PS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS</EntryPointName>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Color_VS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VS</EntryPointName>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

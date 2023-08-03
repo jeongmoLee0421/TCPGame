@@ -10,6 +10,9 @@
     <Filter Include="PacketEnum">
       <UniqueIdentifier>{ac79ba93-34bd-495c-8737-9eb598e0b8d0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Math">
+      <UniqueIdentifier>{76b44ede-73fc-47ed-9da3-5436abc5cbab}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Player.cpp">
@@ -17,6 +20,9 @@
     </ClCompile>
     <ClCompile Include="PacketDefine.cpp">
       <Filter>PacketDefine</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector3.cpp">
+      <Filter>Math</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -28,6 +34,9 @@
     </ClInclude>
     <ClInclude Include="PacketEnum.h">
       <Filter>PacketEnum</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector3.h">
+      <Filter>Math</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

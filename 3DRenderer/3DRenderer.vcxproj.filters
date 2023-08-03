@@ -10,6 +10,9 @@
     <Filter Include="Define">
       <UniqueIdentifier>{3b84602e-6f6b-4fce-ae8a-d90324f1a46f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader">
+      <UniqueIdentifier>{d63e5aa3-2fdb-4d74-94eb-79be3074aed3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="IRenderer.h">
@@ -24,10 +27,21 @@
     <ClInclude Include="ConceptDefine.h">
       <Filter>Define</Filter>
     </ClInclude>
+    <ClInclude Include="ShaderDefine.h">
+      <Filter>Define</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DX11Renderer.cpp">
       <Filter>DX11Renderer</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Color_VS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Color_PS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

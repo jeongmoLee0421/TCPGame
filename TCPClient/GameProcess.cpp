@@ -150,5 +150,7 @@ void GameProcess::Render()
 
 	mRenderer->Render();
 
+	mTCPNetwork->Render(mRenderer);
+
 	mRenderer->EndRender();
 }

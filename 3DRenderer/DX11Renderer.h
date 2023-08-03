@@ -8,6 +8,7 @@
 
 #include "../Inc/IRenderer.h"
 #include "../Inc/DX11Define.h"
+#include "../Inc/Vector3.h"
 
 // 2023 07 24 이정모 home
 
@@ -22,9 +23,25 @@ public:
 	void Initialize(void* hWnd, long clientWidth, long clientHeight) override;
 	void Finalize() override;
 
+public:
 	void BeginRender() override;
 	void Render() override;
 	void EndRender() override;
+
+public:
+	// 특정 위치에 오직 cube만을 그린다.
+	void DrawCube(math::Vector3 position) override;
+
+private:
+	// worldTM은 object마다 다르고
+	DirectX::XMMATRIX MakeWorldTM(math::Vector3 position);
+
+	// view와 proj는 일단 고정
+	void MakeViewTM();
+	void MakeProjTM();
+
+private:
+	void GenerateCubeData();
 
 private:
 	ID3D11Device* mD3DDevice;
@@ -40,6 +57,19 @@ private:
 	ID3D11DepthStencilView* mDepthStencilView;
 	D3D11_VIEWPORT mViewPort;
 
+private:
+	DirectX::XMMATRIX mViewTM;
+	DirectX::XMMATRIX mProjTM;
+
+private:
+	ID3D11Buffer* mVBCube;
+	ID3D11Buffer* mIBCube;
+	ID3D11Buffer* mCBCube;
+	ID3D11VertexShader* mVSCube;
+	ID3D11InputLayout* mILCube;
+	ID3D11PixelShader* mPSCube;
+
+private:
 	long mClientWidth;
 	long mClientHeight;
 };

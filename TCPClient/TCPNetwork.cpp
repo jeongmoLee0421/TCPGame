@@ -9,6 +9,7 @@
 #include "TCPNetwork.h"
 #include "../Inc/PacketEnum.h"
 #include "../Inc/PacketDefine.h"
+#include "../Inc/IRenderer.h"
 
 #pragma comment(lib, "ws2_32")
 #pragma comment(lib, "../Lib/CommonLibrary")
@@ -46,6 +47,17 @@ void TCPNetwork::Finalize()
 	// 메모리 해제
 	delete mSendThread;
 	delete mRecvThread;
+}
+
+void TCPNetwork::Render(IRenderer* pRenderer)
+{
+	// 접속해 있는 client의 position을 가지고
+	// 각각의 worldTM을 만들어서
+	// 3d 세상의 cube로 묘사했다.
+	for (auto& pair : mClientInfo)
+	{
+		pRenderer->DrawCube(pair.second->GetPosition());
+	}
 }
 
 void TCPNetwork::SendPacketToServer(TCPNetwork* pTCPNetwork)
@@ -280,7 +292,8 @@ void TCPNetwork::MakeThread()
 
 void TCPNetwork::NotifyNewClientConnection()
 {
-	// 기존에 server에 접속해 있던 유저들과 동기화하기 위한 패킷
+	// 기존에 server에 접속해 있던 client와
+	// player 데이터를 동기화
 }
 
 void TCPNetwork::WaitForThreadToEnd()
