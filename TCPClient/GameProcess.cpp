@@ -7,6 +7,7 @@
 #include "GameProcess.h"
 #include "../Inc/IRenderer.h"
 #include "../Inc/TCPNetwork.h"
+#include "../Inc/input.h"
 
 GameProcess::GameProcess()
 	: mHwnd{}
@@ -17,13 +18,15 @@ GameProcess::GameProcess()
 	, mRendererModule{}
 	, GetRenderer{ nullptr }
 	, ReleaseRenderer{ nullptr }
-	, mTCPNetwork{nullptr}
+	, mTCPNetwork{ nullptr }
+	, mInput{ nullptr }
 {
 }
 
 GameProcess::~GameProcess()
 {
 	delete mTCPNetwork;
+	delete mInput;
 }
 
 HRESULT GameProcess::Initialize(HINSTANCE hInstance, LPSTR lpCmdLine, int nCmdShow)
@@ -48,6 +51,9 @@ HRESULT GameProcess::Initialize(HINSTANCE hInstance, LPSTR lpCmdLine, int nCmdSh
 	mRenderer = GetRenderer();
 	mRenderer->Initialize(mHwnd, mClientWidth, mClientHeight);
 
+	mInput = new Input();
+	mInput->Initialize();
+
 	mTCPNetwork = new TCPNetwork();
 	mTCPNetwork->Initialize(lpCmdLine);
 
@@ -63,6 +69,8 @@ HRESULT GameProcess::Finalize()
 
 	bSuccess = FreeLibrary(mRendererModule);
 	assert(bSuccess);
+
+	mInput->Finalize();
 
 	// 소켓 통신에 사용되는 thread가 종료될 때까지 기다림
 	mTCPNetwork->Finalize();
@@ -140,6 +148,14 @@ HRESULT GameProcess::InitWindow(HINSTANCE hInstance, int nCmdShow)
 
 void GameProcess::Update()
 {
+	// input class update()를 통해
+	// key state가 결정되면
+	mInput->Update();
+
+	// tcp network class에서
+	// 결정된 key state를 확인하여
+	// server에 패킷 전송
+	mTCPNetwork->Update(mInput);
 }
 
 void GameProcess::Render()

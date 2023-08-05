@@ -10,6 +10,8 @@
 #include "../Inc/PacketEnum.h"
 #include "../Inc/PacketDefine.h"
 #include "../Inc/IRenderer.h"
+#include "../Inc/Input.h"
+#include "../Inc/EnumKeyInput.h"
 
 #pragma comment(lib, "ws2_32")
 #pragma comment(lib, "../Lib/CommonLibrary")
@@ -47,6 +49,19 @@ void TCPNetwork::Finalize()
 	// 메모리 해제
 	delete mSendThread;
 	delete mRecvThread;
+}
+
+void TCPNetwork::Update(Input* mInput)
+{
+	if (mInput->GetKeyDown(eKeyType::Left))
+	{
+		// 왼쪽으로 이동한다는 패킷 전송
+	}
+
+	if (mInput->GetKeyUp(eKeyType::Left))
+	{
+		// 왼쪽 이동을 멈춘다는 패킷 전송
+	}
 }
 
 void TCPNetwork::Render(IRenderer* pRenderer)

@@ -115,7 +115,9 @@
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>copy "$(ProjectDir)GameProcess.h" "$(SolutionDir)Inc\GameProcess.h"
-copy "$(ProjectDir)TCPNetwork.h" "$(SolutionDir)Inc\TCPNetwork.h"</Command>
+copy "$(ProjectDir)TCPNetwork.h" "$(SolutionDir)Inc\TCPNetwork.h"
+copy "$(ProjectDir)Input.h" "$(SolutionDir)Inc\Input.h"
+copy "$(ProjectDir)EnumKeyInput.h" "$(SolutionDir)Inc\EnumKeyInput.h"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -138,11 +140,14 @@ copy "$(ProjectDir)TCPNetwork.h" "$(SolutionDir)Inc\TCPNetwork.h"</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="GameProcess.cpp" />
+    <ClCompile Include="Input.cpp" />
     <ClCompile Include="TCPNetwork.cpp" />
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="EnumKeyInput.h" />
     <ClInclude Include="GameProcess.h" />
+    <ClInclude Include="Input.h" />
     <ClInclude Include="TCPNetwork.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
