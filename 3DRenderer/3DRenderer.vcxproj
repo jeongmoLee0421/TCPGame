@@ -122,11 +122,12 @@ copy "$(ProjectDir)ConceptDefine.h" "$(SolutionDir)Inc\ConceptDefine.h"
 copy "$(ProjectDir)ShaderDefine.h" "$(SolutionDir)Inc\ShaderDefine.h"</Command>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>copy "$(OutDir)3DRenderer.dll" "$(SolutionDir)Dll\3DRenderer.dll"
-
-copy "$(OutDir)Color_VS.cso" "$(SolutionDir)Shader\Color_VS.cso"
-copy "$(OutDir)Color_PS.cso" "$(SolutionDir)Shader\Color_PS.cso"</Command>
+      <Command>copy "$(OutDir)3DRenderer.dll" "$(SolutionDir)Dll\3DRenderer.dll"</Command>
     </PostBuildEvent>
+    <PreLinkEvent>
+      <Command>
+      </Command>
+    </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -163,7 +164,7 @@ copy "$(OutDir)Color_PS.cso" "$(SolutionDir)Shader\Color_PS.cso"</Command>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS</EntryPointName>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="Color_VS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
@@ -171,7 +172,7 @@ copy "$(OutDir)Color_PS.cso" "$(SolutionDir)Shader\Color_PS.cso"</Command>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VS</EntryPointName>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

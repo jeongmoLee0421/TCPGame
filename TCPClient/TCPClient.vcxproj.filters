@@ -10,6 +10,12 @@
     <Filter Include="TCPNetwork">
       <UniqueIdentifier>{f98626e5-320a-40fc-972f-b5c759967f2a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Input">
+      <UniqueIdentifier>{d82b5ff2-30ca-4d03-ae29-f7c5663109f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Enum">
+      <UniqueIdentifier>{7c425a71-e06c-4ee1-aba1-0416f599c34a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinMain.cpp">
@@ -21,6 +27,9 @@
     <ClCompile Include="TCPNetwork.cpp">
       <Filter>TCPNetwork</Filter>
     </ClCompile>
+    <ClCompile Include="Input.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameProcess.h">
@@ -28,6 +37,12 @@
     </ClInclude>
     <ClInclude Include="TCPNetwork.h">
       <Filter>TCPNetwork</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="EnumKeyInput.h">
+      <Filter>Enum</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

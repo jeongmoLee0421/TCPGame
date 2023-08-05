@@ -2,6 +2,7 @@
 
 class IRenderer;
 class TCPNetwork;
+class Input;
 
 // 2023 07 24 이정모 home
 
@@ -39,6 +40,7 @@ private:
 
 private:
 	TCPNetwork* mTCPNetwork;
+	Input* mInput;
 
 private:
 	HWND mHwnd;

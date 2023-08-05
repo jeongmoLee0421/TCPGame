@@ -6,8 +6,6 @@
 
 enum class ePacketHeader : unsigned short
 {
-	None,
-
 	// client가 처음 접속해서
 	// server로 부터 데이터를 받아옴
 	C2S_LoadData,

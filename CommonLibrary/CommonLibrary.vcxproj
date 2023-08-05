@@ -122,6 +122,10 @@ copy /y "$(ProjectDir)Vector3.h" "$(SolutionDir)Inc\Vector3.h"</Command>
     <PostBuildEvent>
       <Command>copy /y "$(OutDir)CommonLibrary.lib" "$(SolutionDir)Lib\CommonLibrary.lib"</Command>
     </PostBuildEvent>
+    <PreLinkEvent>
+      <Command>
+      </Command>
+    </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>

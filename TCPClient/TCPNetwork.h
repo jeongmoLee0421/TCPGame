@@ -14,6 +14,7 @@ namespace std
 enum class ePacketHeader : unsigned short;
 class Player;
 class IRenderer;
+class Input;
 
 // 2023 07 31 이정모 home
 
@@ -29,7 +30,15 @@ public:
 	void Initialize(LPSTR lpCmdLine);
 	void Finalize();
 
+	// Input class는 Update()에서만 사용되고
+	// IRenderer class는 Render()에서만 사용된다.
+	// 여러 곳에서 사용되는 것이 아니고 사용되는 곳이 명확하기 때문에
+	// 멤버 변수로 들고 있지 않고
+	// 함수 호출 때 매개변수로 넘겼다.
 public:
+	// 어떤 Key가 눌렸는가? 등을 확인
+	void Update(Input* mInput);
+
 	// 자신을 포함한 server에 접속한 유저들을 그리기 위함
 	void Render(IRenderer* pRenderer);
 
